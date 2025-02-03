@@ -9,6 +9,10 @@
 
 TFT_eSPI tft = TFT_eSPI();
 unsigned long targetTime = 0;
+String lastTemp = "";
+String lastVoltage = "";
+String lastCharge = "";
+String lastUptime = "";
 
 #if defined(LCD_MODULE_CMD_1)
 typedef struct {
@@ -69,6 +73,19 @@ void setup() {
     // Draw a red rounded edge rectangular outline
     tft.drawRoundRect(0, 0, TFT_HEIGHT, TFT_WIDTH, 10, TFT_RED);
 
+    // Draw static titles
+    tft.setCursor(20, 30);
+    tft.print("Temperature:");
+    
+    tft.setCursor(20, 55);
+    tft.print("Voltage:");
+    
+    tft.setCursor(20, 75);
+    tft.print("Charge:");
+    
+    tft.setCursor(20, 95);
+    tft.print("Uptime:");
+
     // Turn on backlight
     ledcSetup(0, 2000, 8);
     ledcAttachPin(PIN_LCD_BL, 0);
@@ -90,51 +107,55 @@ void loop() {
         // Get temperature
         float temp = temperatureRead();
 
-        // Clear previous readings only
-        tft.fillRect(170, 20, TFT_HEIGHT-180, TFT_WIDTH-40, TFT_BLACK);
+        // Format new readings
+        String newTemp = String(temp, 1) + " C";
+        String newVoltage = String(voltage) + " mV";
+        String newCharge = String(batteryPercentage) + "%";
 
-        // Display temperature
-        tft.setCursor(20, 30);
-        tft.print("Temperature:");
-        tft.setCursor(175, 30);
-        tft.print(String(temp, 1) + " C");
+        // Only update temperature if changed
+        if (newTemp != lastTemp) {
+            tft.fillRect(175, 30, 100, 16, TFT_BLACK); // Clear only the value area
+            tft.setCursor(175, 30);
+            tft.print(newTemp);
+            lastTemp = newTemp;
+        }
 
-        // Display battery voltage
-        tft.setCursor(20, 55);
-        tft.print("Voltage:");
-        tft.setCursor(175, 55);
-        tft.print(String(voltage) + " mV");
+        // Only update voltage if changed
+        if (newVoltage != lastVoltage) {
+            tft.fillRect(175, 55, 100, 16, TFT_BLACK);
+            tft.setCursor(175, 55);
+            tft.print(newVoltage);
+            lastVoltage = newVoltage;
+        }
 
-        // Display battery percentage
-        tft.setCursor(20, 75);
-        tft.print("Charge:");
-        tft.setCursor(175, 75);
-        tft.print(String(batteryPercentage) + "%");
+        // Only update charge if changed
+        if (newCharge != lastCharge) {
+            tft.fillRect(175, 75, 100, 16, TFT_BLACK);
+            tft.setCursor(175, 75);
+            tft.print(newCharge);
+            lastCharge = newCharge;
+        }
+
         targetTime = millis() + 1000;
     }
-    // Display uptime
-    tft.setCursor(20, 95);
-    tft.print("Uptime:");
-    tft.setCursor(175, 95);
-    
-    // Calculate hours, minutes, seconds from millis()
+
+    // Format uptime
+    char uptimeStr[9];
     unsigned long currentMillis = millis();
     unsigned long seconds = currentMillis / 1000;
-    unsigned long minutes = seconds / 60;
-    unsigned long hours = minutes / 60;
-    
-    // Format remaining minutes and seconds
-    minutes = minutes % 60;
+    unsigned long minutes = (seconds / 60) % 60;
+    unsigned long hours = (seconds / 3600);
     seconds = seconds % 60;
     
-    // Display in HH:MM:SS format
-    if (hours < 10) tft.print("0");
-    tft.print(hours);
-    tft.print(":");
-    if (minutes < 10) tft.print("0");
-    tft.print(minutes);
-    tft.print(":");
-    if (seconds < 10) tft.print("0");
-    tft.print(seconds);
+    sprintf(uptimeStr, "%02lu:%02lu:%02lu", hours, minutes, seconds);
+    String newUptime = String(uptimeStr);
+
+    // Only update uptime if changed
+    if (newUptime != lastUptime) {
+        tft.fillRect(175, 95, 100, 16, TFT_BLACK);
+        tft.setCursor(175, 95);
+        tft.print(uptimeStr);
+        lastUptime = newUptime;
+    }
     delay(20);
 }
