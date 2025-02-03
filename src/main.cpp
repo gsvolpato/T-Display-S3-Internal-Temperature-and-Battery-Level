@@ -110,8 +110,31 @@ void loop() {
         tft.print("Charge:");
         tft.setCursor(175, 75);
         tft.print(String(batteryPercentage) + "%");
-
         targetTime = millis() + 1000;
     }
+    // Display uptime
+    tft.setCursor(20, 95);
+    tft.print("Uptime:");
+    tft.setCursor(175, 95);
+    
+    // Calculate hours, minutes, seconds from millis()
+    unsigned long currentMillis = millis();
+    unsigned long seconds = currentMillis / 1000;
+    unsigned long minutes = seconds / 60;
+    unsigned long hours = minutes / 60;
+    
+    // Format remaining minutes and seconds
+    minutes = minutes % 60;
+    seconds = seconds % 60;
+    
+    // Display in HH:MM:SS format
+    if (hours < 10) tft.print("0");
+    tft.print(hours);
+    tft.print(":");
+    if (minutes < 10) tft.print("0");
+    tft.print(minutes);
+    tft.print(":");
+    if (seconds < 10) tft.print("0");
+    tft.print(seconds);
     delay(20);
 }
