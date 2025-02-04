@@ -5,7 +5,7 @@
 
 #define LCD_MODULE_CMD_1
 #define BATT_MIN_VOLTAGE 3300
-#define BATT_MAX_VOLTAGE 4200
+#define BATT_MAX_VOLTAGE 3900
 
 TFT_eSPI tft = TFT_eSPI();
 unsigned long targetTime = 0;
